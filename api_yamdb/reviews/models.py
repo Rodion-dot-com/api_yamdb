@@ -46,7 +46,7 @@ class Title(models.Model):
     year = models.IntegerField(validators=[validate_year])
     description = models.TextField(null=True, blank=True)
     genres = models.ManyToManyField(Genre, through='TitleGenre')
-    category = models.ForeignKey(Category, related_name='titles',
+    category = models.ForeignKey(Category, related_name='titles', null=True,
                                  on_delete=models.SET_NULL)
 
     def __str__(self):
@@ -54,10 +54,8 @@ class Title(models.Model):
 
 
 class TitleGenre(models.Model):
-    genre = models.ForeignKey(Genre, on_delete=models.CASCADE,
-                              related_name='titles')
-    title = models.ForeignKey(Title, on_delete=models.CASCADE,
-                              related_name='genres')
+    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
+    title = models.ForeignKey(Title, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.title} - {self.genre}'
