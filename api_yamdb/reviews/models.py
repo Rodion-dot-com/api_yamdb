@@ -2,11 +2,21 @@ from datetime import datetime
 
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
 
 GENRE_NAME_MAX_LENGTH = 256
 GENRE_SLUG_MAX_LENGTH = 50
 CATEGORY_NAME_MAX_LENGTH = 256
 CATEGORY_SLUG_MAX_LENGTH = 50
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    role = models.CharField(max_length=30)
+    bio = models.TextField()
+
+    def __str__(self):
+        return self.user.username
 
 
 class Genre(models.Model):
