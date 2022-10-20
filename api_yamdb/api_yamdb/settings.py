@@ -1,5 +1,7 @@
 import os
 
+from datetime import timedelta
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -24,6 +26,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'reviews.apps.ReviewsConfig',
     'api.apps.ApiConfig',
+    'djoser',
 ]
 
 MIDDLEWARE = [
@@ -88,7 +91,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-RU'
 
 TIME_ZONE = 'UTC'
 
@@ -104,3 +107,24 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static/'),)
+
+AUTH_USER_MODEL = 'reviews.User'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
+
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}
+
+SIMPLE_JWT = {
+    # Устанавливаем срок жизни токена
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=5),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
