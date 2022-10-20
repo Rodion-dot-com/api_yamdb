@@ -43,5 +43,5 @@ class CommentSerializer(serializers.ModelSerializer):
     author = SlugRelatedField(slug_field='username', read_only=True)
 
     class Meta:
-        field = '__all__'
+        fields = '__all__'
         model = Comment

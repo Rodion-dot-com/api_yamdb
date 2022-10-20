@@ -73,9 +73,7 @@ class Review(models.Model):
         on_delete=models.CASCADE,
         related_name='reviews'
     )
-    score = models.IntegerField(
-        blank=True
-    )
+    score = models.IntegerField()
     pub_date = models.DateTimeField(
         'Дата публикации',
         auto_now_add=True
