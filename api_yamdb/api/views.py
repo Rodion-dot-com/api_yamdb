@@ -12,14 +12,14 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         title_id = self.kwargs.get('titles_id')
         title = get_object_or_404(Title, id=title_id)
-        new_queryset = Review.objects.filter(title_id=title)
+        new_queryset = Review.objects.filter(title=title)
         return new_queryset
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get('titles_id')
         title = get_object_or_404(Title, id=title_id)
         serializer.save(author=self.request.user,
-                        title_id=title)
+                        title=title)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -28,11 +28,11 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')
         review = get_object_or_404(Review, id=review_id)
-        new_queryset = Comment.objects.filter(review_id=review)
+        new_queryset = Comment.objects.filter(review=review)
         return new_queryset
 
     def perform_create(self, serializer):
         review_id = self.kwargs.get('review_id')
         review = get_object_or_404(Review, id=review_id)
         serializer.save(author=self.request.user,
-                        review_id=review)
+                        review=review)
