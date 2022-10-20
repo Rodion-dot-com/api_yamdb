@@ -2,8 +2,9 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 
 
-from reviews.models import Title, Review, Comment
-from serializers import ReviewSerializer, CommentSerializer
+from reviews.models import Title, Review, Comment, Genre, Category
+from api.serializers import (ReviewSerializer, CommentSerializer,
+                             CategorySerializer, GenreSerializer)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -36,3 +37,13 @@ class CommentViewSet(viewsets.ModelViewSet):
         review = get_object_or_404(Review, id=review_id)
         serializer.save(author=self.request.user,
                         review_id=review)
+
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    serializer_class = CategorySerializer
+    queryset = Category.objects.all()
+
+
+class GenreViewSet(viewsets.ModelViewSet):
+    serializer_class = GenreSerializer
+    queryset = Genre.objects.all()
