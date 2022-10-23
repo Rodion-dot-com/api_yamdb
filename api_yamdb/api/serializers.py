@@ -40,7 +40,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def validate_score(self, data):
         score = data.get('score')
-        if type(score) is not int or score not in range(1, 11):
+        if score not in range(1, 11):
             raise serializers.ValidationError(
                 ('Оценка произведения должна быть целой цифрой в диапазоне '
                  'от 1 до 10')
