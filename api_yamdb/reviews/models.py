@@ -79,6 +79,9 @@ class Review(models.Model):
         auto_now_add=True
     )
 
+    class Meta:
+        unique_together = ('title', 'author')
+
 
 class Comment(models.Model):
     review = models.ForeignKey(
