@@ -1,5 +1,3 @@
-import datetime
-
 from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
@@ -22,13 +20,6 @@ class TitleSerializer(serializers.ModelSerializer):
             'id', 'name', 'year', 'rating', 'description', 'genres', 'category'
         )
         model = Title
-
-    def validate_year(self, data):
-        year = data.get('year')
-        if year < datetime.MINYEAR or year > datetime.now().year:
-            raise serializers.ValidationError(
-                'The year is specified incorrectly')
-        return data
 
 
 class ReviewSerializer(serializers.ModelSerializer):
