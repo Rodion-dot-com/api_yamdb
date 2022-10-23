@@ -1,7 +1,4 @@
-from datetime import datetime
-
 from django.db import models
-from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractUser
 
 GENRE_NAME_MAX_LENGTH = 256
@@ -54,14 +51,9 @@ class Category(models.Model):
         return self.name
 
 
-def validate_year(value):
-    if value < 1 or value > datetime.now().year:
-        raise ValidationError('The year is specified incorrectly')
-
-
 class Title(models.Model):
     name = models.TextField()
-    year = models.IntegerField(validators=[validate_year])
+    year = models.IntegerField()
     description = models.TextField(null=True, blank=True)
     genres = models.ManyToManyField(Genre, through='TitleGenre')
     category = models.ForeignKey(Category, related_name='titles', null=True,
