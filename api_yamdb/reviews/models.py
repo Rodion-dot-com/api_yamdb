@@ -11,13 +11,31 @@ CATEGORY_SLUG_MAX_LENGTH = 50
 
 
 class User(AbstractUser):
+    ROLES = (
+        ('user', 'user'),
+        ('moderator', 'moderator'),
+        ('admin', 'admin')
+    )
     bio = models.TextField(
         'Биография',
         blank=True,
     )
-    role = models.CharField(
-        max_length=30,
-    )
+    role = models.CharField(max_length=20, choices=ROLES, default='user')
+
+    REQUIRED_FIELDS = ('email', 'password')
+
+    class Meta:
+        ordering = ('id',)
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+
+    @property
+    def is_admin(self):
+        return self.role == self.ROLES[2][0]
+
+    @property
+    def is_moderator(self):
+        return self.role == self.ROLES[1][0]
 
 
 class Genre(models.Model):
