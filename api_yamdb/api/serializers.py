@@ -48,22 +48,6 @@ class TitleCreateUpdateDestroySerializer(serializers.ModelSerializer):
         model = Title
 
 
-    def create(self, validated_data):
-        genre_list = validated_data.pop('genres')
-
-        title = Title.objects.create(
-            **validated_data
-        )
-
-        for genre in genre_list:
-            TitleGenre.objects.create(
-                title=title,
-                genre=genre,
-            )
-
-        return title
-
-
 class ReviewSerializer(serializers.ModelSerializer):
     author = SlugRelatedField(slug_field='username', read_only=True)
 

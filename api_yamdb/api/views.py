@@ -1,6 +1,8 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, mixins, filters
 from rest_framework.pagination import PageNumberPagination
+from django_filters.rest_framework import DjangoFilterBackend
+from django_filters import FilterSet, CharFilter, NumberFilter
 
 from reviews.models import Title, Review, Comment, Genre, Category
 from api.serializers import (ReviewSerializer, CommentSerializer,
@@ -70,10 +72,24 @@ class GenreViewSet(ListCreateDestroyViewSet):
     lookup_field = 'slug'
 
 
+class TitleFilter(FilterSet):
+    category = CharFilter(field_name='category__slug')
+    genre = CharFilter(field_name='genres__slug')
+    name = CharFilter(field_name='name', lookup_expr='icontains')
+    year = NumberFilter(field_name='year')
+
+    class Meta:
+        model = Title
+        fields = ('category', 'genres', 'name', 'year')
+
+
 class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitleReadSerializer
     queryset = Title.objects.all()
     pagination_class = PageNumberPagination
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitleFilter
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
