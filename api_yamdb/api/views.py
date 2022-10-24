@@ -7,12 +7,14 @@ from api.serializers import (ReviewSerializer, CommentSerializer,
                              CategorySerializer, GenreSerializer,
                              TitleReadSerializer,
                              TitleCreateUpdateDestroySerializer)
-from api.permissions import IsAdminOrReadOnly
+from api.permissions import (IsAdminOrReadOnly,
+                             IsAuthorOrAdministratorOrReadOnly, )
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     pagination_class = PageNumberPagination
+    permission_classes = (IsAuthorOrAdministratorOrReadOnly, )
 
     def get_queryset(self):
         title_id = self.kwargs.get('titles_id')
@@ -30,6 +32,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     pagination_class = PageNumberPagination
+    permission_classes = (IsAuthorOrAdministratorOrReadOnly, )
 
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')

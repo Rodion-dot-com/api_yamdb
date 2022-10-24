@@ -47,7 +47,6 @@ class TitleCreateUpdateDestroySerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
         model = Title
 
-
     def create(self, validated_data):
         genre_list = validated_data.pop('genres')
 
