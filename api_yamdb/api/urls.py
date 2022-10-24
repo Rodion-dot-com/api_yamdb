@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework import routers
 
-from api.views import GenreViewSet, CategoryViewSet
+from api.views import GenreViewSet, CategoryViewSet, TitleViewSet
 from reviews.views import UserViewSetForAdmin
 
 
@@ -9,6 +9,7 @@ router_v1 = routers.DefaultRouter()
 
 router_v1.register('genres', GenreViewSet)
 router_v1.register('categories', CategoryViewSet)
+router_v1.register('titles', TitleViewSet, basename='titles')
 router_v1.register('users', UserViewSetForAdmin, basename='users')
 
 

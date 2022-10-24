@@ -1,11 +1,13 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins, filters
 from rest_framework.pagination import PageNumberPagination
-
 
 from reviews.models import Title, Review, Comment, Genre, Category
 from api.serializers import (ReviewSerializer, CommentSerializer,
-                             CategorySerializer, GenreSerializer)
+                             CategorySerializer, GenreSerializer,
+                             TitleReadSerializer,
+                             TitleCreateUpdateDestroySerializer)
+from api.permissions import IsAdminOrReadOnly
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -41,13 +43,39 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, review=review)
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class ListCreateDestroyViewSet(mixins.ListModelMixin,
+                               mixins.CreateModelMixin,
+                               mixins.DestroyModelMixin,
+                               viewsets.GenericViewSet):
+    pass
+
+
+class CategoryViewSet(ListCreateDestroyViewSet):
     serializer_class = CategorySerializer
     queryset = Category.objects.all()
+    permission_classes = (IsAdminOrReadOnly,)
     pagination_class = PageNumberPagination
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    lookup_field = 'slug'
 
 
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(ListCreateDestroyViewSet):
     serializer_class = GenreSerializer
     queryset = Genre.objects.all()
+    permission_classes = (IsAdminOrReadOnly,)
     pagination_class = PageNumberPagination
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    lookup_field = 'slug'
+
+
+class TitleViewSet(viewsets.ModelViewSet):
+    serializer_class = TitleReadSerializer
+    queryset = Title.objects.all()
+    pagination_class = PageNumberPagination
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return TitleReadSerializer
+        return TitleCreateUpdateDestroySerializer
