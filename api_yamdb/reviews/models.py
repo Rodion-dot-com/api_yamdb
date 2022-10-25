@@ -11,13 +11,12 @@ CATEGORY_SLUG_MAX_LENGTH = 50
 
 
 class MyUserManager(UserManager):
-    """Сохраняет пользователя только с email.
-    Зарезервированное имя использовать нельзя."""
+    """Проверка наличия email"""
     def create_user(self, username, email, password, **extra_fields):
         if not email:
             raise ValueError('Поле email обязательное')
         if username == 'me':
-            raise ValueError('reserved name not use')
+            raise ValueError('me использовать нельзя')
         return super().create_user(
             username, email=email, password=password, **extra_fields)
 
