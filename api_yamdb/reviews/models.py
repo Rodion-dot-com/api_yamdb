@@ -2,12 +2,29 @@ from datetime import datetime
 
 from django.db import models
 from django.core.exceptions import ValidationError
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager
 
 GENRE_NAME_MAX_LENGTH = 256
 GENRE_SLUG_MAX_LENGTH = 50
 CATEGORY_NAME_MAX_LENGTH = 256
 CATEGORY_SLUG_MAX_LENGTH = 50
+
+
+class MyUserManager(UserManager):
+    """Сохраняет пользователя только с email.
+    Зарезервированное имя использовать нельзя."""
+    def create_user(self, username, email, password, **extra_fields):
+        if not email:
+            raise ValueError('Поле email обязательное')
+        if username == 'me':
+            raise ValueError('reserved name not use')
+        return super().create_user(
+            username, email=email, password=password, **extra_fields)
+
+    def create_superuser(
+            self, username, email, password, role='admin', **extra_fields):
+        return super().create_superuser(
+            username, email, password, role='admin', **extra_fields)
 
 
 class User(AbstractUser):
@@ -21,6 +38,8 @@ class User(AbstractUser):
         blank=True,
     )
     role = models.CharField(max_length=20, choices=ROLES, default='user')
+    username = models.CharField(max_length=150, unique=True, db_index=True)
+    objects = MyUserManager()
 
     REQUIRED_FIELDS = ('email', 'password')
 
