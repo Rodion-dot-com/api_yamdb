@@ -60,6 +60,9 @@ class Genre(models.Model):
     name = models.TextField(max_length=GENRE_NAME_MAX_LENGTH)
     slug = models.SlugField(unique=True, max_length=GENRE_SLUG_MAX_LENGTH)
 
+    class Meta:
+        ordering = ['-id']
+
     def __str__(self):
         return self.name
 
@@ -67,6 +70,9 @@ class Genre(models.Model):
 class Category(models.Model):
     name = models.TextField(max_length=CATEGORY_NAME_MAX_LENGTH)
     slug = models.SlugField(unique=True, max_length=CATEGORY_SLUG_MAX_LENGTH)
+
+    class Meta:
+        ordering = ['-id']
 
     def __str__(self):
         return self.name
@@ -84,6 +90,9 @@ class Title(models.Model):
     genres = models.ManyToManyField(Genre, through='TitleGenre')
     category = models.ForeignKey(Category, related_name='titles', null=True,
                                  on_delete=models.SET_NULL)
+
+    class Meta:
+        ordering = ['-id']
 
     def __str__(self):
         return self.name
@@ -117,6 +126,7 @@ class Review(models.Model):
 
     class Meta:
         unique_together = ('title', 'author')
+        ordering = ['-id']
 
 
 class Comment(models.Model):
