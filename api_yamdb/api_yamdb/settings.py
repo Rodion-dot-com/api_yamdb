@@ -111,9 +111,11 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static/'),)
 
 AUTH_USER_MODEL = 'reviews.User'
 
+PAGINATOR_PAGE_ITEMS_COUNT = 10
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+        'rest_framework.permissions.IsAuthenticated',
     ],
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -121,9 +123,8 @@ REST_FRAMEWORK = {
     ],
 
     'DEFAULT_PAGINATION_CLASS': (
-        'rest_framework.pagination.PageNumberPagination',
-    ),
-    'PAGE_SIZE': 5,
+        'rest_framework.pagination.PageNumberPagination'),
+    'PAGE_SIZE': PAGINATOR_PAGE_ITEMS_COUNT,
 }
 
 SIMPLE_JWT = {
