@@ -1,8 +1,8 @@
-from datetime import datetime, MINYEAR
+from datetime import MINYEAR, datetime
 
-from django.db import models
-from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractUser, UserManager
+from django.core.exceptions import ValidationError
+from django.db import models
 
 GENRE_NAME_MAX_LENGTH = 256
 GENRE_SLUG_MAX_LENGTH = 50

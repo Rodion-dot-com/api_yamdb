@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from reviews.models import Review, Comment, User, Title, Genre, Category, TitleGenre
-
+from reviews.models import (Category, Comment, Genre, Review, Title,
+                            TitleGenre, User)
 
 admin.site.register(User)
 admin.site.register(Genre)

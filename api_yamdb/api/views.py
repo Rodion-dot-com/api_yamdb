@@ -1,26 +1,25 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-
-from rest_framework import viewsets, mixins, filters, status
+from django_filters import CharFilter, FilterSet, NumberFilter
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, mixins, status, viewsets
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework.pagination import PageNumberPagination
 
-from django_filters.rest_framework import DjangoFilterBackend
-from django_filters import FilterSet, CharFilter, NumberFilter
-
-from reviews.models import Title, Review, Comment, Genre, Category, User
-from api.serializers import (ReviewSerializer, CommentSerializer,
-                             CategorySerializer, GenreSerializer,
-                             TitleReadSerializer, AdminSerializer,
-                             UserSerializer, TokenSerializer,
-                             TitleCreateUpdateDestroySerializer)
-from api.permissions import (IsAdminOrReadOnly, AllWithoutGuestOrReadOnly,
-                             AdminPermissions)
+from api.permissions import (AdminPermissions, AllWithoutGuestOrReadOnly,
+                             IsAdminOrReadOnly)
+from api.serializers import (AdminSerializer, CategorySerializer,
+                             CommentSerializer, GenreSerializer,
+                             ReviewSerializer,
+                             TitleCreateUpdateDestroySerializer,
+                             TitleReadSerializer, TokenSerializer,
+                             UserSerializer)
+from reviews.models import Category, Comment, Genre, Review, Title, User
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -31,8 +30,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         title_id = self.kwargs.get('titles_id')
         title = get_object_or_404(Title, id=title_id)
-        new_queryset = Review.objects.filter(title=title)
-        return new_queryset
+        return Review.objects.filter(title=title)
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get('titles_id')
@@ -49,8 +47,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')
         review = get_object_or_404(Review, id=review_id)
-        new_queryset = Comment.objects.filter(review=review)
-        return new_queryset
+        return Comment.objects.filter(review=review)
 
     def perform_create(self, serializer):
         review_id = self.kwargs.get('review_id')
