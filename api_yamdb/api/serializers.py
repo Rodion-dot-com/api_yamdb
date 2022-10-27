@@ -2,6 +2,8 @@ from django.db.models import Avg
 from rest_framework import serializers, exceptions
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueValidator
+from django.shortcuts import get_object_or_404
+from rest_framework.validators import UniqueTogetherValidator
 
 from reviews.models import Review, Comment, Title, Category, Genre, User
 
@@ -50,15 +52,27 @@ class TitleCreateUpdateDestroySerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    author = SlugRelatedField(slug_field='username', read_only=True)
+    title = SlugRelatedField(slug_field='name', read_only=True,
+                             default=serializers.CurrentUserDefault())
+    author = SlugRelatedField(slug_field='username', read_only=True,
+                              default=serializers.CurrentUserDefault())
 
     class Meta:
-        fields = '__all__'
+        fields = ('id', 'title', 'text', 'author', 'score', 'pub_date')
         model = Review
 
+    def validate(self, attrs):
+        if self.context.get('request').method == "POST":
+            author = self.context.get('request').user
+            title_id = self.context.get('view').kwargs.get('titles_id')
+            title = get_object_or_404(Title, id=title_id)
+            if Review.objects.filter(title=title, author=author).exists():
+                raise serializers.ValidationError(
+                    'На каждое произведение можно оставить только одно ревью')
+        return attrs
+
     def validate_score(self, data):
-        score = data.get('score')
-        if score not in range(1, 11):
+        if data not in range(1, 11):
             raise serializers.ValidationError(
                 ('Оценка произведения должна быть целой цифрой в диапазоне '
                  'от 1 до 10')
@@ -68,9 +82,10 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     author = SlugRelatedField(slug_field='username', read_only=True)
+    review = SlugRelatedField(slug_field='id', read_only=True)
 
     class Meta:
-        fields = '__all__'
+        fields = ('id', 'review', 'text', 'author', 'pub_date')
         model = Comment
 
 
