@@ -125,8 +125,13 @@ class Review(models.Model):
     )
 
     class Meta:
-        unique_together = ('title', 'author')
         ordering = ['-id']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title', 'author'],
+                name='unique_title_author'
+            )
+        ]
 
 
 class Comment(models.Model):
@@ -145,3 +150,6 @@ class Comment(models.Model):
         'Дата добавления',
         auto_now_add=True
     )
+
+    class Meta:
+        ordering = ['-id']
