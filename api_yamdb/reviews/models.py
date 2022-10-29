@@ -3,6 +3,7 @@ from datetime import MINYEAR, datetime
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 GENRE_NAME_MAX_LENGTH = 256
 GENRE_SLUG_MAX_LENGTH = 50
@@ -110,18 +111,28 @@ class Review(models.Model):
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        related_name='reviews'
+        related_name='reviews',
+        verbose_name='id Произведения'
     )
-    text = models.TextField()
+    text = models.TextField(
+        verbose_name='Содержание ревью',
+    )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='reviews'
+        related_name='reviews',
+        verbose_name='Автор'
     )
-    score = models.IntegerField()
+    score = models.IntegerField(
+        verbose_name='Оценка произведения',
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(10)
+        ]
+    )
     pub_date = models.DateTimeField(
-        'Дата публикации',
-        auto_now_add=True
+        auto_now_add=True,
+        verbose_name='Дата публикации'
     )
 
     class Meta:
@@ -138,17 +149,21 @@ class Comment(models.Model):
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
-        related_name='comments'
+        related_name='comments',
+        verbose_name='id Ревью'
     )
-    text = models.TextField()
+    text = models.TextField(
+        verbose_name='Содержание комментария',
+    )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='comments'
+        related_name='comments',
+        verbose_name='Автор'
     )
     pub_date = models.DateTimeField(
-        'Дата добавления',
-        auto_now_add=True
+        auto_now_add=True,
+        verbose_name='Дата добавления'
     )
 
     class Meta:

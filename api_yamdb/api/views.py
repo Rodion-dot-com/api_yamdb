@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
+from django.db.models import Avg, Q  #, IntegerField
 
 from api.permissions import (AdminPermissions, AllWithoutGuestOrReadOnly,
                              IsAdminOrReadOnly)
@@ -105,6 +106,9 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action in ('list', 'retrieve'):
             return TitleReadSerializer
         return TitleCreateUpdateDestroySerializer
+
+    def get_queryset(self):
+        return Title.objects.annotate(rating=Avg('reviews__score'))
 
 
 def create_conf_code_and_send_email(username):

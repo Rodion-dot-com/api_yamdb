@@ -1,4 +1,3 @@
-from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import exceptions, serializers
 from rest_framework.relations import SlugRelatedField
@@ -24,9 +23,8 @@ class TitleReadSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(read_only=True, many=True, source='genres')
     category = CategorySerializer(read_only=True)
 
-    def get_rating(self, title_object):
-        return Review.objects.filter(title=title_object).aggregate(
-            Avg('score')).get('score__avg')
+    def get_rating(self, obj):
+        return obj.rating
 
     class Meta:
         fields = (
@@ -60,7 +58,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
 
     def validate(self, attrs):
-        if self.context.get('request').method == "POST":
+        if self.context.get('request').method == 'POST':
             author = self.context.get('request').user
             title_id = self.context.get('view').kwargs.get('titles_id')
             title = get_object_or_404(Title, id=title_id)
@@ -69,21 +67,13 @@ class ReviewSerializer(serializers.ModelSerializer):
                     'На каждое произведение можно оставить только одно ревью')
         return attrs
 
-    def validate_score(self, data):
-        if data not in range(1, 11):
-            raise serializers.ValidationError(
-                ('Оценка произведения должна быть целой цифрой в диапазоне '
-                 'от 1 до 10')
-            )
-        return data
-
 
 class CommentSerializer(serializers.ModelSerializer):
     author = SlugRelatedField(slug_field='username', read_only=True)
-    review = SlugRelatedField(slug_field='id', read_only=True)
 
     class Meta:
         fields = ('id', 'review', 'text', 'author', 'pub_date')
+        read_only_fields = ('review',)
         model = Comment
 
 
