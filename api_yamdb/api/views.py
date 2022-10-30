@@ -1,7 +1,7 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
-from django_filters import CharFilter, FilterSet, NumberFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.pagination import PageNumberPagination
@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
+from api.filtersets import TitleFilter
 from api.permissions import (AdminPermissions, AllWithoutGuestOrReadOnly,
                              IsAdminOrReadOnly)
 from api.serializers import (AdminSerializer, CategorySerializer,
@@ -82,17 +83,6 @@ class GenreViewSet(ListCreateDestroyViewSet):
     lookup_field = 'slug'
 
 
-class TitleFilter(FilterSet):
-    category = CharFilter(field_name='category__slug')
-    genre = CharFilter(field_name='genres__slug')
-    name = CharFilter(field_name='name', lookup_expr='icontains')
-    year = NumberFilter(field_name='year')
-
-    class Meta:
-        model = Title
-        fields = ('category', 'genres', 'name', 'year')
-
-
 class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitleReadSerializer
     queryset = Title.objects.all()
@@ -100,6 +90,9 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
+
+    def get_queryset(self):
+        return Title.objects.annotate(rating=Avg('reviews__score'))
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):

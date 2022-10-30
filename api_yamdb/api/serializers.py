@@ -1,4 +1,3 @@
-from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import exceptions, serializers
 from rest_framework.relations import SlugRelatedField
@@ -25,8 +24,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
 
     def get_rating(self, title_object):
-        return Review.objects.filter(title=title_object).aggregate(
-            Avg('score')).get('score__avg')
+        return title_object.rating
 
     class Meta:
         fields = (
@@ -45,7 +43,6 @@ class TitleCreateUpdateDestroySerializer(serializers.ModelSerializer):
         fields = (
             'id', 'name', 'year', 'description', 'genre', 'category'
         )
-        read_only_fields = ('id',)
         model = Title
 
 
@@ -80,11 +77,11 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     author = SlugRelatedField(slug_field='username', read_only=True)
-    review = SlugRelatedField(slug_field='id', read_only=True)
 
     class Meta:
         fields = ('id', 'review', 'text', 'author', 'pub_date')
         model = Comment
+        read_only_fields = ('review',)
 
 
 class UserSerializer(serializers.ModelSerializer):
