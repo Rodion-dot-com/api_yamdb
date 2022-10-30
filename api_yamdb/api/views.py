@@ -1,6 +1,5 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
-from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
@@ -10,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
+from django.db.models import Avg
 
 from api.filtersets import TitleFilter
 from api.permissions import (AdminPermissions, AllWithoutGuestOrReadOnly,
@@ -91,13 +91,13 @@ class TitleViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
-    def get_queryset(self):
-        return Title.objects.annotate(rating=Avg('reviews__score'))
-
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
             return TitleReadSerializer
         return TitleCreateUpdateDestroySerializer
+
+    def get_queryset(self):
+        return Title.objects.annotate(rating=Avg('reviews__score'))
 
 
 def create_conf_code_and_send_email(username):
