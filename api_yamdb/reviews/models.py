@@ -10,9 +10,19 @@ GENRE_SLUG_MAX_LENGTH = 50
 CATEGORY_NAME_MAX_LENGTH = 256
 CATEGORY_SLUG_MAX_LENGTH = 50
 
+USER = 'user'
+MODERATOR = 'moderator'
+ADMIN = 'admin'
+ROLES = [
+    ('user', USER),
+    ('moderator', MODERATOR),
+    ('admin', ADMIN)
+]
+
 
 class MyUserManager(UserManager):
-    """Проверка наличия email"""
+    """Проверка наличия emai."""
+
     def create_user(self, username, email, password, **extra_fields):
         if not email:
             raise ValueError('Поле email обязательное')
@@ -22,23 +32,30 @@ class MyUserManager(UserManager):
             username, email=email, password=password, **extra_fields)
 
     def create_superuser(
-            self, username, email, password, role='admin', **extra_fields):
+            self, username, email, password, role=ADMIN, **extra_fields):
         return super().create_superuser(
-            username, email, password, role='admin', **extra_fields)
+            username, email, password, role=ADMIN, **extra_fields)
 
 
 class User(AbstractUser):
-    ROLES = (
-        ('user', 'user'),
-        ('moderator', 'moderator'),
-        ('admin', 'admin')
+    username = models.CharField(
+        max_length=150,
+        unique=True,  # Исключаем повторение username
+    )
+    email = models.EmailField(
+        max_length=254,
+        unique=True,  # Исключаем повторение адресов
     )
     bio = models.TextField(
-        'Биография',
+        verbose_name='Биография',
         blank=True,
     )
-    role = models.CharField(max_length=20, choices=ROLES, default='user')
-    username = models.CharField(max_length=150, unique=True, db_index=True)
+    role = models.CharField(
+        max_length=20,
+        choices=ROLES,
+        default=USER,
+        verbose_name='Роль',
+    )
     objects = MyUserManager()
 
     REQUIRED_FIELDS = ('email', 'password')
@@ -50,11 +67,13 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == self.ROLES[2][0]
+        return any(
+            [self.role == ADMIN, self.is_superuser]
+        )
 
     @property
     def is_moderator(self):
-        return self.role == self.ROLES[1][0]
+        return self.role == MODERATOR
 
 
 class Genre(models.Model):

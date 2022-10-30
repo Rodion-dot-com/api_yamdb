@@ -1,13 +1,13 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
+
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import AllowAny
+from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 from django.db.models import Avg
 
@@ -107,14 +107,21 @@ def create_conf_code_and_send_email(username):
         'Confirmation code',
         f'Your confirmation code {confirmation_code}',
         'from@YAMDB.ru',
-        [user.email])
+        (user.email,)
+    )
 
 
-class APISignUp(APIView):
-    """Регистрация пользователя"""
-    permission_classes = (AllowAny, )
+class AuthClass(viewsets.ModelViewSet):
+    """Класс авторизации пользователей."""
 
-    def post(self, request):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    @action(
+        detail=False, methods=['post'],
+        url_path='signup', permission_classes=(AllowAny, )
+    )
+    def signup(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
@@ -125,12 +132,11 @@ class APISignUp(APIView):
                  'username': serializer.data['username']},
                 status=status.HTTP_200_OK)
 
-
-class APIToken(APIView):
-    """Выдача токена"""
-    permission_classes = (AllowAny, )
-
-    def post(self, request):
+    @action(
+        detail=False, methods=['post'],
+        url_path='token', permission_classes=(AllowAny, )
+    )
+    def token(self, request):
         serializer = TokenSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             user = get_object_or_404(
@@ -145,27 +151,26 @@ class APIToken(APIView):
                 status=status.HTTP_400_BAD_REQUEST)
 
 
-class APIUser(APIView):
-    def get(self, request, *args, **kwargs):
-        user = get_object_or_404(User, username=request.user.username)
-        serializer = UserSerializer(user, many=False)
-        return Response(serializer.data)
-
-    def patch(self, request, *args, **kwargs):
-        user = get_object_or_404(User, username=request.user.username)
-        serializer = UserSerializer(
-            user, data=request.data, partial=True, many=False)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class UserViewSetForAdmin(ModelViewSet):
-    """Работа с пользователями для администратора"""
+class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = AdminSerializer
     lookup_field = 'username'
     permission_classes = (AdminPermissions, )
     filter_backends = (filters.SearchFilter, )
     search_fields = ('username', )
+
+    @action(
+        detail=False, methods=['get', 'patch'],
+        url_path='me', url_name='me',
+        permission_classes=(IsAuthenticated,),
+    )
+    def about_me(self, request):
+        serializer = UserSerializer(request.user)
+        if request.method == 'PATCH':
+            serializer = UserSerializer(
+                request.user, data=request.data, partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)
