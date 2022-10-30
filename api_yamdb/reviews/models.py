@@ -2,8 +2,8 @@ from datetime import MINYEAR, datetime
 
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
 
 GENRE_NAME_MAX_LENGTH = 256
 GENRE_SLUG_MAX_LENGTH = 50
@@ -38,10 +38,6 @@ class MyUserManager(UserManager):
 
 
 class User(AbstractUser):
-    username = models.CharField(
-        max_length=150,
-        unique=True,  # Исключаем повторение username
-    )
     email = models.EmailField(
         max_length=254,
         unique=True,  # Исключаем повторение адресов
@@ -77,22 +73,30 @@ class User(AbstractUser):
 
 
 class Genre(models.Model):
-    name = models.TextField(max_length=GENRE_NAME_MAX_LENGTH)
-    slug = models.SlugField(unique=True, max_length=GENRE_SLUG_MAX_LENGTH)
+    name = models.TextField(max_length=GENRE_NAME_MAX_LENGTH,
+                            verbose_name='Название')
+    slug = models.SlugField(unique=True, max_length=GENRE_SLUG_MAX_LENGTH,
+                            verbose_name='Уникальное имя')
 
     class Meta:
         ordering = ['-id']
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
 
     def __str__(self):
         return self.name
 
 
 class Category(models.Model):
-    name = models.TextField(max_length=CATEGORY_NAME_MAX_LENGTH)
-    slug = models.SlugField(unique=True, max_length=CATEGORY_SLUG_MAX_LENGTH)
+    name = models.TextField(max_length=CATEGORY_NAME_MAX_LENGTH,
+                            verbose_name='Название')
+    slug = models.SlugField(unique=True, max_length=CATEGORY_SLUG_MAX_LENGTH,
+                            verbose_name='Уникальное имя')
 
     class Meta:
         ordering = ['-id']
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
 
     def __str__(self):
         return self.name
@@ -100,27 +104,35 @@ class Category(models.Model):
 
 def validate_year(value):
     if value < MINYEAR or value > datetime.now().year:
-        raise ValidationError('The year is specified incorrectly')
+        raise ValidationError('Год указан неправильно')
 
 
 class Title(models.Model):
-    name = models.TextField()
-    year = models.IntegerField(validators=[validate_year])
-    description = models.TextField(null=True, blank=True)
-    genres = models.ManyToManyField(Genre, through='TitleGenre')
+    name = models.TextField(verbose_name='Название')
+    year = models.IntegerField(validators=[validate_year],
+                               verbose_name='Год выпуска')
+    description = models.TextField(null=True, blank=True,
+                                   verbose_name='Описание')
+    genres = models.ManyToManyField(Genre, through='TitleGenre',
+                                    verbose_name='Жанры')
     category = models.ForeignKey(Category, related_name='titles', null=True,
-                                 on_delete=models.SET_NULL)
+                                 on_delete=models.SET_NULL,
+                                 verbose_name='Категория')
 
     class Meta:
         ordering = ['-id']
+        verbose_name = 'Произведение'
+        verbose_name_plural = 'Произведения'
 
     def __str__(self):
         return self.name
 
 
 class TitleGenre(models.Model):
-    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
-    title = models.ForeignKey(Title, on_delete=models.CASCADE)
+    genre = models.ForeignKey(Genre, on_delete=models.CASCADE,
+                              verbose_name='Жанр')
+    title = models.ForeignKey(Title, on_delete=models.CASCADE,
+                              verbose_name='Произведение')
 
     def __str__(self):
         return f'{self.title} - {self.genre}'
@@ -162,6 +174,8 @@ class Review(models.Model):
                 name='unique_title_author'
             )
         ]
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
 
 
 class Comment(models.Model):
@@ -187,3 +201,5 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ['-id']
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'

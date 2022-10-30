@@ -2,9 +2,9 @@ import csv
 import os
 
 from django.core.management.base import BaseCommand
+from reviews import models
 
 from api_yamdb.settings import BASE_DIR
-from reviews import models
 
 DATA_DIR = os.path.join(BASE_DIR, 'static', 'data')
 
