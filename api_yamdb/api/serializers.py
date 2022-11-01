@@ -19,17 +19,14 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class TitleReadSerializer(serializers.ModelSerializer):
     rating = serializers.IntegerField()
-    genre = GenreSerializer(read_only=True, many=True, source='genres')
-    category = CategorySerializer(read_only=True)
-
-    def get_rating(self, obj):
-        return obj.rating
+    genre = GenreSerializer(many=True, source='genres')
+    category = CategorySerializer()
 
     class Meta:
         fields = (
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
-        read_only_fields = ('rating',)
+        read_only_fields = ('name', 'year', 'rating', 'description', 'genre', 'category')
         model = Title
 
 
