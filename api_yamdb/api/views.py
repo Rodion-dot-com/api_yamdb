@@ -1,8 +1,12 @@
+from functools import partial
+from http.client import METHOD_NOT_ALLOWED
+from pickle import PUT
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, status, permissions, viewsets
+from rest_framework import filters, status, permissions, viewsets, generics
 from rest_framework.decorators import action
+from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
@@ -66,7 +70,7 @@ def create_conf_code_and_send_email(username):
     )
 
 
-class AuthClass(viewsets.ModelViewSet):
+class AuthClass(viewsets.ViewSet):
     """Класс авторизации пользователей."""
 
     queryset = User.objects.all()
@@ -114,18 +118,27 @@ class UserViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter, )
     search_fields = ('username', )
 
+    def update(self, request, *args, **kwargs):
+        if self.action == 'update':
+            raise MethodNotAllowed('PUT')
+        return super().update(request, *args, **kwargs)
+
     @action(
-        detail=False, methods=['get', 'patch'],
+        detail=False, methods=['get'],
         url_path='me', url_name='me',
         permission_classes=(IsAuthenticated,),
+        serializer_class=UserSerializer
     )
     def about_me(self, request):
-        serializer = UserSerializer(request.user)
-        if request.method == 'PATCH':
-            serializer = UserSerializer(
-                request.user, data=request.data, partial=True
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = self.get_serializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @about_me.mapping.patch
+    def patch_about_me(self, request):
+        serializer = self.get_serializer(
+            request.user, data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save(role=request.user.role)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+

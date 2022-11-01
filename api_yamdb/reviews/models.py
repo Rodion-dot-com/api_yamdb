@@ -13,9 +13,9 @@ USER = 'user'
 MODERATOR = 'moderator'
 ADMIN = 'admin'
 ROLES = [
-    ('user', USER),
-    ('moderator', MODERATOR),
-    ('admin', ADMIN)
+    (USER, 'Пользователь'),
+    (MODERATOR, 'Модератор'),
+    (ADMIN, 'Администратор')
 ]
 
 
@@ -37,10 +37,6 @@ class MyUserManager(UserManager):
 
 
 class User(AbstractUser):
-    username = models.CharField(
-        max_length=150,
-        unique=True,  # Исключаем повторение username
-    )
     email = models.EmailField(
         max_length=254,
         unique=True,  # Исключаем повторение адресов
@@ -66,13 +62,11 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return any(
-            [self.role == ADMIN, self.is_superuser]
-        )
+        return any((self.role == ADMIN, self.is_superuser))
 
     @property
     def is_moderator(self):
-        return self.role == MODERATOR
+        return any((self.role == MODERATOR, self.is_superuser))
 
 
 class Genre(models.Model):

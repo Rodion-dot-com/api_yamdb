@@ -1,7 +1,6 @@
 from django.db.models import Avg
 from rest_framework import serializers, exceptions
 from rest_framework.relations import SlugRelatedField
-from rest_framework.validators import UniqueValidator
 
 from reviews.models import Review, Comment, Title, Category, Genre, User
 
@@ -75,9 +74,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class AdminSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(
-        validators=[UniqueValidator(queryset=User.objects.all())])
-
     class Meta:
         model = User
         fields = (

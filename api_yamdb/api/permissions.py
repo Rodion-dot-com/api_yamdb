@@ -15,17 +15,10 @@ class AdminPermissions(permissions.BasePermission):
         return (request.user.is_authenticated and request.user.is_admin)
 
 
-class AllWithoutGuestOrReadOnly(permissions.BasePermission):
+class AllWithoutGuestOrReadOnly(permissions.IsAuthenticatedOrReadOnly):
     """Для review."""
 
-    def has_permission(self, request, view):
-        return (
-            request.method in permissions.SAFE_METHODS
-            and request.user.is_anonymous
-            or request.user.is_authenticated
-        )
-
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request, obj):
         return (
             request.method in permissions.SAFE_METHODS
             or obj.author == request.user
