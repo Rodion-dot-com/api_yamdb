@@ -1,7 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import exceptions, serializers
 from rest_framework.relations import SlugRelatedField
-from rest_framework.validators import UniqueValidator
 from reviews.models import Category, Comment, Genre, Review, Title, User
 
 
@@ -26,7 +25,9 @@ class TitleReadSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
-        read_only_fields = ('name', 'year', 'rating', 'description', 'genre', 'category')
+        read_only_fields = (
+            'name', 'year', 'rating', 'description', 'genre', 'category'
+        )
         model = Title
 
 
@@ -88,9 +89,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class AdminSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(
-        validators=[UniqueValidator(queryset=User.objects.all())])
-
     class Meta:
         model = User
         fields = (

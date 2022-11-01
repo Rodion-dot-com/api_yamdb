@@ -13,11 +13,11 @@ CATEGORY_SLUG_MAX_LENGTH = 50
 USER = 'user'
 MODERATOR = 'moderator'
 ADMIN = 'admin'
-ROLES = [
-    ('user', USER),
-    ('moderator', MODERATOR),
-    ('admin', ADMIN)
-]
+ROLES = (
+    (USER, 'Пользователь'),
+    (MODERATOR, 'Модератор'),
+    (ADMIN, 'Администратор')
+)
 
 
 class MyUserManager(UserManager):
@@ -63,13 +63,11 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return any(
-            [self.role == ADMIN, self.is_superuser]
-        )
+        return any((self.role == ADMIN, self.is_superuser))
 
     @property
     def is_moderator(self):
-        return self.role == MODERATOR
+        return any((self.role == MODERATOR, self.is_superuser))
 
 
 class Genre(models.Model):
@@ -79,7 +77,7 @@ class Genre(models.Model):
                             verbose_name='Уникальное имя')
 
     class Meta:
-        ordering = ['-id']
+        ordering = ('-id',)
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
@@ -94,7 +92,7 @@ class Category(models.Model):
                             verbose_name='Уникальное имя')
 
     class Meta:
-        ordering = ['-id']
+        ordering = ('-id',)
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
@@ -109,7 +107,7 @@ def validate_year(value):
 
 class Title(models.Model):
     name = models.TextField(verbose_name='Название')
-    year = models.IntegerField(validators=[validate_year],
+    year = models.IntegerField(validators=(validate_year,),
                                verbose_name='Год выпуска')
     description = models.TextField(null=True, blank=True,
                                    verbose_name='Описание')
@@ -120,7 +118,7 @@ class Title(models.Model):
                                  verbose_name='Категория')
 
     class Meta:
-        ordering = ['-id']
+        ordering = ('-id',)
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
 
@@ -156,10 +154,10 @@ class Review(models.Model):
     )
     score = models.IntegerField(
         verbose_name='Оценка произведения',
-        validators=[
+        validators=(
             MinValueValidator(1),
             MaxValueValidator(10)
-        ]
+        )
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,
@@ -167,13 +165,13 @@ class Review(models.Model):
     )
 
     class Meta:
-        ordering = ['-id']
-        constraints = [
+        ordering = ('-id',)
+        constraints = (
             models.UniqueConstraint(
-                fields=['title', 'author'],
+                fields=('title', 'author'),
                 name='unique_title_author'
             )
-        ]
+        )
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
 
@@ -200,6 +198,6 @@ class Comment(models.Model):
     )
 
     class Meta:
-        ordering = ['-id']
+        ordering = ('-id',)
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'

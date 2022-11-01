@@ -14,6 +14,7 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -106,14 +107,14 @@ def create_conf_code_and_send_email(username):
     )
 
 
-class AuthClass(viewsets.ModelViewSet):
+class AuthClass(viewsets.ViewSet):
     """Класс авторизации пользователей."""
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
     @action(
-        detail=False, methods=['post'],
+        detail=False, methods=('post',),
         url_path='signup', permission_classes=(AllowAny, )
     )
     def signup(self, request):
@@ -128,7 +129,7 @@ class AuthClass(viewsets.ModelViewSet):
                 status=status.HTTP_200_OK)
 
     @action(
-        detail=False, methods=['post'],
+        detail=False, methods=('post',),
         url_path='token', permission_classes=(AllowAny, )
     )
     def token(self, request):
@@ -154,18 +155,26 @@ class UserViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter, )
     search_fields = ('username', )
 
+    def update(self, request, *args, **kwargs):
+        if self.action == 'update':
+            raise MethodNotAllowed('PUT')
+        return super().update(request, *args, **kwargs)
+
     @action(
-        detail=False, methods=['get', 'patch'],
+        detail=False, methods=('get',),
         url_path='me', url_name='me',
         permission_classes=(IsAuthenticated,),
+        serializer_class=UserSerializer
     )
     def about_me(self, request):
-        serializer = UserSerializer(request.user)
-        if request.method == 'PATCH':
-            serializer = UserSerializer(
-                request.user, data=request.data, partial=True
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @about_me.mapping.patch
+    def patch_about_me(self, request):
+        serializer = self.get_serializer(
+            request.user, data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save(role=request.user.role)
         return Response(serializer.data, status=status.HTTP_200_OK)
