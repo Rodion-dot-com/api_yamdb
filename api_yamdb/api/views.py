@@ -1,20 +1,21 @@
 from api.filtersets import TitleFilter
 from api.permissions import (AdminPermissions, AllWithoutGuestOrReadOnly,
                              IsAdminOrReadOnly)
-from api.serializers import (AdminSerializer, CategorySerializer,
+from api.serializers import (CategorySerializer,
                              CommentSerializer, GenreSerializer,
                              ReviewSerializer,
                              TitleCreateUpdateDestroySerializer,
                              TitleReadSerializer, TokenSerializer,
-                             UserSerializer)
+                             UserSerializer, SignUpSerializer)
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db.models import Avg
+from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import MethodNotAllowed
+from rest_framework.exceptions import MethodNotAllowed, ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -110,23 +111,23 @@ def create_conf_code_and_send_email(user):
 class AuthClass(viewsets.ViewSet):
     """Класс авторизации пользователей."""
 
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
     @action(
         detail=False, methods=('post',),
         url_path='signup', permission_classes=(AllowAny, )
     )
     def signup(self, request):
-        serializer = UserSerializer(data=request.data)
+        serializer = SignUpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        try:
+            user, _ = User.objects.get_or_create(**serializer.validated_data)
+        except IntegrityError:
+            raise ValidationError(
+                'Пользователь с такими данными уже существует')
         create_conf_code_and_send_email(
             User.objects.get(username=serializer.data['username'])
         )
         return Response(
-            {'email': serializer.data['email'],
-             'username': serializer.data['username']},
+            serializer.data,
             status=status.HTTP_200_OK)
 
     @action(
@@ -149,7 +150,7 @@ class AuthClass(viewsets.ViewSet):
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
-    serializer_class = AdminSerializer
+    serializer_class = UserSerializer
     lookup_field = 'username'
     permission_classes = (AdminPermissions, )
     filter_backends = (filters.SearchFilter, )
@@ -164,7 +165,6 @@ class UserViewSet(viewsets.ModelViewSet):
         detail=False, methods=('get',),
         url_path='me', url_name='me',
         permission_classes=(IsAuthenticated,),
-        serializer_class=UserSerializer
     )
     def about_me(self, request):
         serializer = self.get_serializer(request.user)

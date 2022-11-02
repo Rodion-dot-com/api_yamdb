@@ -78,9 +78,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
-        )
-        read_only_fields = ('role', )
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role')
 
     def validate_username(self, value):
         if value == 'me':
@@ -88,11 +86,11 @@ class UserSerializer(serializers.ModelSerializer):
         return value
 
 
-class AdminSerializer(serializers.ModelSerializer):
+class SignUpSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'username', 'email', 'first_name', 'last_name', 'bio', 'role')
+            'username', 'email')
 
     def validate_username(self, value):
         if value == 'me':
