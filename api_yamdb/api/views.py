@@ -19,6 +19,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+from api_yamdb.settings import DEFAULT_FROM_EMAIL
 from reviews.models import Category, Comment, Genre, Review, Title, User
 
 
@@ -96,13 +97,12 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitleCreateUpdateDestroySerializer
 
 
-def create_conf_code_and_send_email(username):
-    user = get_object_or_404(User, username=username)
+def create_conf_code_and_send_email(user):
     confirmation_code = default_token_generator.make_token(user)
     send_mail(
-        'Confirmation code',
-        f'Your confirmation code {confirmation_code}',
-        'from@YAMDB.ru',
+        'Код подтверждения',
+        f'Ваш код подтверждения: {confirmation_code}',
+        DEFAULT_FROM_EMAIL,
         (user.email,)
     )
 
@@ -119,14 +119,15 @@ class AuthClass(viewsets.ViewSet):
     )
     def signup(self, request):
         serializer = UserSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            create_conf_code_and_send_email(
-                serializer.data['username'])
-            return Response(
-                {'email': serializer.data['email'],
-                 'username': serializer.data['username']},
-                status=status.HTTP_200_OK)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        create_conf_code_and_send_email(
+            User.objects.get(username=serializer.data['username'])
+        )
+        return Response(
+            {'email': serializer.data['email'],
+             'username': serializer.data['username']},
+            status=status.HTTP_200_OK)
 
     @action(
         detail=False, methods=('post',),
@@ -135,8 +136,7 @@ class AuthClass(viewsets.ViewSet):
     def token(self, request):
         serializer = TokenSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            user = get_object_or_404(
-                User, username=serializer.data['username'])
+            user = User.objects.get(username=serializer.data['username'])
             if default_token_generator.check_token(
                user, serializer.data['confirmation_code']):
                 token = AccessToken.for_user(user)
