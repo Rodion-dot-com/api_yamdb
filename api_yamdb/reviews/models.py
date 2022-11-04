@@ -109,8 +109,7 @@ class Title(models.Model):
     name = models.TextField(verbose_name='Название')
     year = models.IntegerField(validators=(validate_year,),
                                verbose_name='Год выпуска')
-    description = models.TextField(null=True, blank=True,
-                                   verbose_name='Описание')
+    description = models.TextField(blank=True, verbose_name='Описание')
     genres = models.ManyToManyField(Genre, through='TitleGenre',
                                     verbose_name='Жанры')
     category = models.ForeignKey(Category, related_name='titles', null=True,
@@ -170,7 +169,7 @@ class Review(models.Model):
             models.UniqueConstraint(
                 fields=('title', 'author'),
                 name='unique_title_author'
-            )
+            ),
         )
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
