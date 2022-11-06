@@ -43,23 +43,22 @@ class TitleCreateUpdateDestroySerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    title = SlugRelatedField(slug_field='name', read_only=True,
-                             default=serializers.CurrentUserDefault())
     author = SlugRelatedField(slug_field='username', read_only=True,
                               default=serializers.CurrentUserDefault())
 
     class Meta:
-        fields = ('id', 'title', 'text', 'author', 'score', 'pub_date')
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
         model = Review
 
     def validate(self, attrs):
-        if self.context.get('request').method == 'POST':
-            author = self.context.get('request').user
-            title_id = self.context.get('view').kwargs.get('titles_id')
-            title = get_object_or_404(Title, id=title_id)
-            if Review.objects.filter(title=title, author=author).exists():
-                raise serializers.ValidationError(
-                    'На каждое произведение можно оставить только одно ревью')
+        if self.context.get('request').method != 'POST':
+            return attrs
+        author = self.context.get('request').user
+        title_id = self.context.get('view').kwargs.get('titles_id')
+        title = get_object_or_404(Title, id=title_id)
+        if Review.objects.filter(title=title, author=author).exists():
+            raise serializers.ValidationError(
+                'На каждое произведение можно оставить только одно ревью')
         return attrs
 
 
@@ -67,8 +66,7 @@ class CommentSerializer(serializers.ModelSerializer):
     author = SlugRelatedField(slug_field='username', read_only=True)
 
     class Meta:
-        fields = ('id', 'review', 'text', 'author', 'pub_date')
-        read_only_fields = ('review',)
+        fields = ('id', 'text', 'author', 'pub_date')
         model = Comment
 
 
