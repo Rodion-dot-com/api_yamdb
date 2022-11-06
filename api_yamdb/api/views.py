@@ -34,7 +34,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get('titles_id')
-        title = Title.objects.get(id=title_id)
+        title = get_object_or_404(Title, id=title_id)  # Title.objects.get(id=title_id)
         serializer.save(author=self.request.user,
                         title=title)
 
@@ -49,7 +49,12 @@ class CommentViewSet(viewsets.ModelViewSet):
         return Comment.objects.filter(review=review)
 
     def perform_create(self, serializer):
+        title_id = self.kwargs.get('titles_id')
+        title = get_object_or_404(Title, id=title_id)
         review_id = self.kwargs.get('review_id')
+        if not Review.objects.filter(title=title, id=review_id).exists():
+            raise ValidationError(
+                'id произведения и id отзыва не соответствуют друг другу')
         review = get_object_or_404(Review, id=review_id)
         serializer.save(author=self.request.user, review=review)
 

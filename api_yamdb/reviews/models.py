@@ -146,7 +146,7 @@ class Review(models.Model):
         related_name='reviews',
         verbose_name='Автор'
     )
-    score = models.IntegerField(
+    score = models.PositiveSmallIntegerField(
         verbose_name='Оценка произведения',
         validators=(
             MinValueValidator(1),
@@ -155,11 +155,12 @@ class Review(models.Model):
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,
-        verbose_name='Дата публикации'
+        verbose_name='Дата публикации',
+        db_index=True
     )
 
     class Meta:
-        ordering = ('-id',)
+        ordering = ('-pub_date',)
         constraints = (
             models.UniqueConstraint(
                 fields=('title', 'author'),
@@ -188,10 +189,11 @@ class Comment(models.Model):
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,
-        verbose_name='Дата добавления'
+        verbose_name='Дата добавления',
+        db_index=True
     )
 
     class Meta:
-        ordering = ('-id',)
+        ordering = ('-pub_date',)
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
