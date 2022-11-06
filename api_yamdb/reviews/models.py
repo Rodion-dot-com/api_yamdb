@@ -1,9 +1,8 @@
-from datetime import MINYEAR, datetime
-
 from django.contrib.auth.models import AbstractUser, UserManager
-from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+
+from reviews.validators import validate_year
 
 GENRE_NAME_MAX_LENGTH = 256
 GENRE_SLUG_MAX_LENGTH = 50
@@ -100,15 +99,11 @@ class Category(models.Model):
         return self.name
 
 
-def validate_year(value):
-    if value < MINYEAR or value > datetime.now().year:
-        raise ValidationError('Год указан неправильно')
-
-
 class Title(models.Model):
     name = models.TextField(verbose_name='Название')
-    year = models.IntegerField(validators=(validate_year,),
-                               verbose_name='Год выпуска')
+    year = models.PositiveSmallIntegerField(validators=(validate_year,),
+                                            verbose_name='Год выпуска',
+                                            db_index=True)
     description = models.TextField(blank=True, verbose_name='Описание')
     genres = models.ManyToManyField(Genre, through='TitleGenre',
                                     verbose_name='Жанры')
