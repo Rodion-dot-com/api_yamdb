@@ -62,13 +62,18 @@ class Command(BaseCommand):
                   encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile, delimiter=',')
             for title_data in reader:
-                new_title = models.Title(
-                    id=title_data.get('id'),
-                    name=title_data.get('name'),
-                    year=title_data.get('year'),
-                    category=models.Category.objects.get(
-                        id=title_data.get('category')))
-                new_title.save()
+                try:
+                    new_title = models.Title(
+                        id=title_data.get('id'),
+                        name=title_data.get('name'),
+                        year=title_data.get('year'),
+                        category=models.Category.objects.get(
+                            id=title_data.get('category')))
+                    new_title.save()
+                except Exception as e:
+                    self.stdout.write(self.style.WARNING(
+                        f'Creation skipped. Unable to create an object {e}'))
+                    continue
         self.stdout.write('Titles added successfully')
 
     def add_title_genre(self):
