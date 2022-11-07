@@ -55,7 +55,7 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.WARNING(
                         f'Creation skipped. Unable to create an object {e}'))
                     continue
-        self.stdout.write('Genres added successfully')
+        self.stdout.write(self.style.SUCCESS('Genres added successfully'))
 
     def add_titles(self):
         with open(name_path['Title'], newline='',
@@ -74,7 +74,7 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.WARNING(
                         f'Creation skipped. Unable to create an object {e}'))
                     continue
-        self.stdout.write('Titles added successfully')
+        self.stdout.write(self.style.SUCCESS('Titles added successfully'))
 
     def add_title_genre(self):
         with open(name_path['TitleGenre'], newline='',
@@ -95,7 +95,8 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.WARNING(
                         f'Creation skipped. Unable to create an object {e}'))
                     continue
-        self.stdout.write('Title Genre relations added successfully')
+        self.stdout.write(self.style.SUCCESS(
+            'Title Genre relations added successfully'))
 
     def add_users(self):
         with open(name_path['User'], newline='',
@@ -114,7 +115,7 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.WARNING(
                         f'Creation skipped. Unable to create an object {e}'))
                     continue
-        self.stdout.write('Users added successfully')
+        self.stdout.write(self.style.SUCCESS('Users added successfully'))
 
     def add_reviews(self):
         with open(name_path['Review'], newline='',
@@ -137,7 +138,7 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.WARNING(
                         f'Creation skipped. Unable to create an object {e}'))
                     continue
-        self.stdout.write('Reviews added successfully')
+        self.stdout.write(self.style.SUCCESS('Reviews added successfully'))
 
     def add_comments(self):
         with open(name_path['Comment'], newline='',
@@ -159,7 +160,7 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.WARNING(
                         f'Creation skipped. Unable to create an object {e}'))
                     continue
-        self.stdout.write('Comments added successfully')
+        self.stdout.write(self.style.SUCCESS('Comments added successfully'))
 
     def handle(self, *args, **kwargs):
         self.add_categories()
