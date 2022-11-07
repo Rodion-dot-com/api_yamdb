@@ -1,7 +1,6 @@
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-
 from reviews.validators import validate_year
 
 GENRE_NAME_MAX_LENGTH = 256

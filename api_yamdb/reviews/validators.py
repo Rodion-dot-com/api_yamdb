@@ -1,4 +1,4 @@
-from datetime import datetime, MINYEAR
+from datetime import MINYEAR, datetime
 
 from django.core.exceptions import ValidationError
 

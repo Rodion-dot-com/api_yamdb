@@ -1,4 +1,3 @@
-from django.shortcuts import get_object_or_404
 from rest_framework import exceptions, serializers
 from rest_framework.relations import SlugRelatedField
 from reviews.models import Category, Comment, Genre, Review, Title, User
@@ -55,8 +54,7 @@ class ReviewSerializer(serializers.ModelSerializer):
             return attrs
         author = self.context.get('request').user
         title_id = self.context.get('view').kwargs.get('titles_id')
-        title = get_object_or_404(Title, id=title_id)
-        if Review.objects.filter(title=title, author=author).exists():
+        if Review.objects.filter(title__id=title_id, author=author).exists():
             raise serializers.ValidationError(
                 'На каждое произведение можно оставить только одно ревью')
         return attrs

@@ -1,16 +1,17 @@
 from api.filtersets import TitleFilter
 from api.permissions import (AdminPermissions, AllWithoutGuestOrReadOnly,
                              IsAdminOrReadOnly)
-from api.serializers import (CategorySerializer,
-                             CommentSerializer, GenreSerializer,
-                             ReviewSerializer,
+from api.serializers import (CategorySerializer, CommentSerializer,
+                             GenreSerializer, ReviewSerializer,
+                             SignUpSerializer,
                              TitleCreateUpdateDestroySerializer,
                              TitleReadSerializer, TokenSerializer,
-                             UserSerializer, SignUpSerializer)
+                             UserSerializer)
+from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
-from django.db.models import Avg
 from django.db import IntegrityError
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
@@ -19,8 +20,7 @@ from rest_framework.exceptions import MethodNotAllowed, ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-from django.conf import settings
-from reviews.models import Category, Comment, Genre, Review, Title, User
+from reviews.models import Category, Genre, Review, Title, User
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -30,11 +30,11 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         title_id = self.kwargs.get('titles_id')
         title = get_object_or_404(Title, id=title_id)
-        return Review.objects.filter(title=title)
+        return title.reviews.all()
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get('titles_id')
-        title = get_object_or_404(Title, id=title_id)  # Title.objects.get(id=title_id)
+        title = get_object_or_404(Title, id=title_id)
         serializer.save(author=self.request.user,
                         title=title)
 
@@ -46,16 +46,16 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')
         review = get_object_or_404(Review, id=review_id)
-        return Comment.objects.filter(review=review)
+        return review.comments.all()
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get('titles_id')
         title = get_object_or_404(Title, id=title_id)
         review_id = self.kwargs.get('review_id')
+        review = get_object_or_404(Review, id=review_id)
         if not Review.objects.filter(title=title, id=review_id).exists():
             raise ValidationError(
                 'id произведения и id отзыва не соответствуют друг другу')
-        review = get_object_or_404(Review, id=review_id)
         serializer.save(author=self.request.user, review=review)
 
 
