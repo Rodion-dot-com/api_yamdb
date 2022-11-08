@@ -92,6 +92,11 @@ class TitleViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
+    def update(self, request, *args, **kwargs):
+        if self.action == 'update':
+            raise MethodNotAllowed('PUT')
+        return super().update(request, *args, **kwargs)
+
     def get_serializer_class(self):
         if self.action in {'list', 'retrieve'}:
             return TitleReadSerializer
